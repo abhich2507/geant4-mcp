@@ -323,6 +323,111 @@ async def handle_call_tool(name: str, arguments: dict | None) -> list[TextConten
                 )
             ]
         
+        elif name == "create_plots":
+            import uproot
+            import numpy as np
+            import matplotlib.pyplot as plt
+            import base64
+            from io import BytesIO
+            
+            root_file = arguments.get("root_file", "output/simulation_results.root")
+            
+            if not Path(root_file).exists():
+                return [
+                    TextContent(
+                        type="text",
+                        text=f"ROOT file not found: {root_file}. Run a simulation first."
+                    )
+                ]
+            
+            # Read ROOT file
+            with uproot.open(root_file) as f:
+                tree = f["events"]
+                energy_deposited = tree["energy_deposited"].array()
+                truth_energy = tree["truth_energy"].array()
+                tracks = tree["tracks_created"].array()
+                event_id = tree["event_id"].array()
+            
+            # Create output directory
+            output_dir = Path("output/plots")
+            output_dir.mkdir(parents=True, exist_ok=True)
+            
+            plot_files = []
+            
+            # Plot 1: Energy Deposition Histogram
+            plt.figure(figsize=(10, 6))
+            plt.hist(energy_deposited, bins=30, alpha=0.7, color='blue', edgecolor='black')
+            plt.xlabel('Energy Deposited (MeV)', fontsize=12)
+            plt.ylabel('Number of Events', fontsize=12)
+            plt.title('Energy Deposition Distribution', fontsize=14, fontweight='bold')
+            plt.grid(True, alpha=0.3)
+            plt.tight_layout()
+            plot1 = output_dir / "energy_deposition_hist.png"
+            plt.savefig(plot1, dpi=150)
+            plt.close()
+            plot_files.append(str(plot1))
+            
+            # Plot 2: Summary Dashboard
+            fig, axes = plt.subplots(2, 2, figsize=(14, 10))
+            
+            axes[0, 0].hist(energy_deposited, bins=30, alpha=0.7, color='blue', edgecolor='black')
+            axes[0, 0].set_xlabel('Energy Deposited (MeV)')
+            axes[0, 0].set_ylabel('Events')
+            axes[0, 0].set_title('Energy Distribution')
+            axes[0, 0].grid(True, alpha=0.3)
+            
+            axes[0, 1].scatter(event_id, energy_deposited, alpha=0.5, s=10)
+            axes[0, 1].set_xlabel('Event ID')
+            axes[0, 1].set_ylabel('Energy Deposited (MeV)')
+            axes[0, 1].set_title('Energy per Event')
+            axes[0, 1].grid(True, alpha=0.3)
+            
+            axes[1, 0].hist(tracks, bins=range(0, int(np.max(tracks))+2), alpha=0.7, color='green', edgecolor='black')
+            axes[1, 0].set_xlabel('Tracks Created')
+            axes[1, 0].set_ylabel('Events')
+            axes[1, 0].set_title('Secondary Tracks')
+            axes[1, 0].grid(True, alpha=0.3)
+            
+            stats_text = f"""Statistics Summary
+
+Total Events: {len(event_id)}
+Mean Energy: {np.mean(energy_deposited):.4f} MeV
+Std Dev: {np.std(energy_deposited):.4f} MeV
+Min: {np.min(energy_deposited):.4f} MeV
+Max: {np.max(energy_deposited):.4f} MeV
+
+Total Deposited: {np.sum(energy_deposited):.2f} MeV
+Mean Tracks: {np.mean(tracks):.1f}"""
+            
+            axes[1, 1].text(0.1, 0.5, stats_text, fontsize=11, family='monospace', 
+                            verticalalignment='center', transform=axes[1, 1].transAxes)
+            axes[1, 1].axis('off')
+            
+            plt.suptitle('GEANT4 Simulation Summary', fontsize=16, fontweight='bold')
+            plt.tight_layout()
+            plot2 = output_dir / "summary_dashboard.png"
+            plt.savefig(plot2, dpi=150)
+            plt.close()
+            plot_files.append(str(plot2))
+            
+            # Return text with plot locations
+            result_text = f"Created {len(plot_files)} plots from {root_file}:\n\n"
+            for plot_file in plot_files:
+                result_text += f"✓ {plot_file}\n"
+            
+            result_text += f"\nStatistics:\n"
+            result_text += f"  Total Events: {len(event_id)}\n"
+            result_text += f"  Mean Energy Deposited: {np.mean(energy_deposited):.4f} MeV\n"
+            result_text += f"  Std Dev: {np.std(energy_deposited):.4f} MeV\n"
+            result_text += f"  Total Energy Deposited: {np.sum(energy_deposited):.2f} MeV\n"
+            
+            return [
+                TextContent(
+                    type="text",
+                    text=result_text
+                )
+            ]
+        
         else:
             return [
                 TextContent(
