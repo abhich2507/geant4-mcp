@@ -1,6 +1,8 @@
 # GEANT4 Simulation with MCP Server
 
-A complete GEANT4 simulation system using Python bindings, integrated with Claude Desktop via Model Context Protocol (MCP) server, all running in Docker on macOS.
+A complete GEANT4 particle physics simulation system using Python bindings, integrated with Claude Desktop via Model Context Protocol (MCP) server. Fully containerized with Docker for easy deployment on macOS, Windows, and Linux.
+
+> **🚀 Ready to Use**: Clone this repo and run with Docker - no manual GEANT4 installation required!
 
 ## Features
 
@@ -13,6 +15,26 @@ A complete GEANT4 simulation system using Python bindings, integrated with Claud
 - **MCP Server Integration**: Control simulations directly from Claude Desktop
 - **Docker Container**: Complete isolated environment with all dependencies
 - **JSON Output**: Easy-to-parse simulation results
+- **ROOT File Support**: Output data in ROOT TTree format for advanced analysis
+- **Plotting Tools**: Generate physics plots directly from Claude Desktop
+- **Cross-Platform**: Works on macOS, Windows (WSL2), and Linux
+
+## What Users Get
+
+After cloning this repository, users can:
+
+1. **Build and run in 3 commands**:
+   ```bash
+   git clone https://github.com/<your-username>/geant4-mcp.git
+   cd geant4-mcp
+   docker-compose up -d
+   ```
+
+2. **Control from Claude Desktop** - Configure and run simulations through natural language
+
+3. **No GEANT4 installation needed** - Everything is containerized
+
+4. **Complete working example** - Default configuration runs out of the box
 
 ## Quick Start
 
@@ -492,6 +514,140 @@ The GEANT4 Python bindings may take a long time to compile. Wait for the initial
 
 3. **Continue with Quick Start section above**
 
+## Publishing and Sharing
+
+### Publishing to GitHub
+
+This project is ready to be published on GitHub! Users will be able to:
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/<your-username>/geant4-mcp.git
+   cd geant4-mcp
+   ```
+
+2. **Build and run** following the Quick Start instructions above
+
+3. **All dependencies are containerized** - users don't need to install GEANT4 or Python packages manually
+
+### What's Included for Users
+
+✅ **Ready to Run**:
+- Complete Docker setup (Dockerfile + docker-compose.yml)
+- All Python code (simulation.py, mcp_server.py)
+- Default configuration (config.json)
+- Documentation (README.md + additional guides)
+
+✅ **No Manual Setup Required**:
+- GEANT4 is compiled automatically in Docker
+- All Python dependencies installed via requirements.txt
+- MCP server ready to connect to Claude Desktop
+
+✅ **Cross-Platform**:
+- Works on macOS (Intel + Apple Silicon)
+- Works on Windows (with WSL2)
+- Works on Linux (native)
+
+### Before Publishing
+
+**Optional but Recommended**:
+
+1. **Review sensitive data**:
+   ```bash
+   # Check what will be committed
+   git status
+   ```
+
+2. **Test on a fresh clone** (optional):
+   ```bash
+   cd /tmp
+   git clone /path/to/your/repo test-clone
+   cd test-clone
+   docker-compose build
+   docker-compose up -d
+   ```
+
+3. **Add a license** (if not already present):
+   ```bash
+   # Choose a license at https://choosealicense.com/
+   # Common choices: MIT, Apache 2.0, GPL-3.0
+   ```
+
+### What Users Need
+
+Users only need to have installed:
+- **Git** (to clone the repository)
+- **Docker Desktop** (for their platform)
+- **Claude Desktop** (to use the MCP integration)
+
+Everything else is handled automatically by Docker!
+
+### Repository Setup
+
+If you haven't pushed to GitHub yet:
+
+```bash
+# Initialize git (if needed)
+git init
+
+# Add all files
+git add .
+
+# Commit
+git commit -m "Initial commit: GEANT4 simulation with MCP server"
+
+# Add your GitHub repository as remote
+git remote add origin https://github.com/<your-username>/geant4-mcp.git
+
+# Push to GitHub
+git branch -M main
+git push -u origin main
+```
+
+### Recommended GitHub Settings
+
+1. **Add Topics/Tags**:
+   - `geant4`
+   - `particle-physics`
+   - `simulation`
+   - `mcp-server`
+   - `docker`
+   - `claude-desktop`
+   - `python`
+
+2. **Add Description**:
+   > "GEANT4 particle physics simulation with MCP server integration for Claude Desktop. Fully containerized with Docker."
+
+3. **Enable Issues** - So users can report problems or ask questions
+
+4. **Add GitHub Actions** (optional) - For automated Docker builds
+
 ## License
 
-This project is provided as-is for educational and research purposes.
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+This software uses GEANT4, which is distributed under the [Geant4 Software License](https://geant4.web.cern.ch/license).
+
+## Contributing
+
+Contributions are welcome! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+
+## Citation
+
+If you use this software in your research, please cite:
+
+```bibtex
+@software{geant4_mcp_2025,
+  title={GEANT4 Simulation with MCP Server},
+  author={Your Name},
+  year={2025},
+  url={https://github.com/<your-username>/geant4-mcp}
+}
+```
+
+## Acknowledgments
+
+- [GEANT4 Collaboration](https://geant4.web.cern.ch/) for the particle physics simulation toolkit
+- [Anthropic](https://www.anthropic.com/) for Claude Desktop and MCP protocol
+- [CERN ROOT](https://root.cern/) for data analysis framework
+

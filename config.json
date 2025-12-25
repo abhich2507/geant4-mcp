@@ -1,0 +1,18 @@
+{
+  "particle": {
+    "type": "gamma",
+    "energy_MeV": 1.0,
+    "position_cm": [0.0, 0.0, -10.0],
+    "direction": [0.0, 0.0, 1.0]
+  },
+  "detector": {
+    "cube_size_x_cm": 10.0,
+    "cube_size_y_cm": 10.0,
+    "cube_size_z_cm": 10.0,
+    "material": "G4_WATER"
+  },
+  "simulation": {
+    "num_events": 100,
+    "output_file": "output/simulation_results.json"
+  }
+}

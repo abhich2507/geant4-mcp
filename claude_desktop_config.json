@@ -1,0 +1,17 @@
+{
+  "mcpServers": {
+    "geant4-simulation": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "geant4-simulation",
+        "python3",
+        "/workspace/mcp_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/opt/geant4/lib"
+      }
+    }
+  }
+}

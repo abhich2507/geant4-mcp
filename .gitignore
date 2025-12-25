@@ -22,8 +22,11 @@ ENV/
 # Output
 output/
 *.root
-*.json
 results/
+
+# Don't ignore example config
+!claude_desktop_config.json
+!config.json
 
 # Docker
 .dockerignore
