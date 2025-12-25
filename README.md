@@ -16,8 +16,17 @@ A complete GEANT4 simulation system using Python bindings, integrated with Claud
 
 ## Quick Start
 
+### Prerequisites
+
+- **macOS/Linux**: Docker Desktop installed
+- **Windows**: Docker Desktop with WSL2 enabled
+- Claude Desktop application
+- 10+ GB disk space
+- 8+ GB RAM recommended
+
 ### 1. Build and Start Docker Container
 
+#### macOS/Linux:
 ```bash
 # Build the Docker image (this will take 30-60 minutes for GEANT4)
 docker-compose build
@@ -26,11 +35,74 @@ docker-compose build
 docker-compose up -d
 ```
 
+#### Windows (PowerShell or Command Prompt):
+```powershell
+# Build the Docker image (this will take 30-60 minutes for GEANT4)
+docker-compose build
+
+# Start the container
+docker-compose up -d
+```
+
+> **Note for Windows**: Make sure Docker Desktop is running and WSL2 integration is enabled in Settings → Resources → WSL Integration.
+
 ### 2. Configure Claude Desktop
 
 Add the following to your Claude Desktop configuration file:
 
-**macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+#### macOS:
+**Location**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "geant4-simulation": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "geant4-simulation",
+        "python3",
+        "/workspace/mcp_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/opt/geant4/lib"
+      }
+    }
+  }
+}
+```
+
+#### Windows:
+**Location**: `%APPDATA%\Claude\claude_desktop_config.json`
+
+```json
+{
+  "mcpServers": {
+    "geant4-simulation": {
+      "command": "docker",
+      "args": [
+        "exec",
+        "-i",
+        "geant4-simulation",
+        "python3",
+        "/workspace/mcp_server.py"
+      ],
+      "env": {
+        "PYTHONPATH": "/opt/geant4/lib"
+      }
+    }
+  }
+}
+```
+
+> **Windows Tip**: You can open this location by typing `%APPDATA%\Claude` in Windows Explorer address bar or by running:
+> ```powershell
+> notepad "$env:APPDATA\Claude\claude_desktop_config.json"
+> ```
+
+#### Linux:
+**Location**: `~/.config/Claude/claude_desktop_config.json`
 
 ```json
 {
@@ -54,7 +126,19 @@ Add the following to your Claude Desktop configuration file:
 
 ### 3. Restart Claude Desktop
 
-Restart Claude Desktop to load the MCP server.
+**macOS**:
+```bash
+pkill -9 "Claude" && open -a "Claude"
+```
+
+**Windows**:
+- Close Claude Desktop completely (check system tray)
+- Reopen from Start Menu
+
+**Linux**:
+```bash
+killall claude && claude &
+```
 
 ### 4. Use from Claude Desktop
 
@@ -71,7 +155,20 @@ Configure a simulation with:
 
 ### Run Simulation Directly
 
+#### macOS/Linux:
 ```bash
+# Enter the container
+docker exec -it geant4-simulation bash
+
+# Run with default configuration
+python3 simulation.py
+
+# Run with custom configuration
+python3 simulation.py config.json
+```
+
+#### Windows (PowerShell):
+```powershell
 # Enter the container
 docker exec -it geant4-simulation bash
 
@@ -203,7 +300,17 @@ geant4-mcp/
 
 ### Rebuilding After Changes
 
+#### macOS/Linux:
 ```bash
+# Rebuild container
+docker-compose build
+
+# Restart container
+docker-compose restart
+```
+
+#### Windows (PowerShell):
+```powershell
 # Rebuild container
 docker-compose build
 
@@ -213,6 +320,7 @@ docker-compose restart
 
 ### Viewing Logs
 
+#### All Platforms:
 ```bash
 # View MCP server logs
 docker-compose logs -f
@@ -224,7 +332,15 @@ docker logs geant4-simulation
 ## Troubleshooting
 
 ### Container won't start
+#### macOS/Linux:
 ```bash
+docker-compose down
+docker-compose up -d
+docker-compose logs
+```
+
+#### Windows (PowerShell):
+```powershell
 docker-compose down
 docker-compose up -d
 docker-compose logs
@@ -232,9 +348,32 @@ docker-compose logs
 
 ### Claude Desktop doesn't see the server
 1. Check container is running: `docker ps`
-2. Verify configuration file location
-3. Restart Claude Desktop
+2. Verify configuration file location:
+   - **macOS**: `~/Library/Application Support/Claude/claude_desktop_config.json`
+   - **Windows**: `%APPDATA%\Claude\claude_desktop_config.json`
+   - **Linux**: `~/.config/Claude/claude_desktop_config.json`
+3. Restart Claude Desktop completely
 4. Check MCP server logs in Claude Desktop Developer Tools
+
+### Windows-Specific Issues
+
+#### Docker not found
+- Ensure Docker Desktop is installed and running
+- Check that Docker Desktop is set to start on login
+- Verify WSL2 is enabled: `wsl --status` in PowerShell
+
+#### WSL2 Integration Issues
+1. Open Docker Desktop Settings
+2. Go to Resources → WSL Integration
+3. Enable integration with your WSL2 distro
+4. Click "Apply & Restart"
+
+#### Permission Denied Errors
+- Run PowerShell/Command Prompt as Administrator
+- Ensure your user is in the `docker-users` group
+
+#### Path Issues in Windows
+If you see path-related errors, ensure you're using forward slashes in Docker commands or let Docker handle the path conversion automatically.
 
 ### Python import errors
 The GEANT4 Python bindings may take a long time to compile. Wait for the initial build to complete.
@@ -244,14 +383,115 @@ The GEANT4 Python bindings may take a long time to compile. Wait for the initial
 - **First Build**: 30-60 minutes (GEANT4 compilation)
 - **Container Start**: ~10 seconds
 - **Simulation Speed**: ~100-1000 events/second (depends on complexity)
+- **Windows Note**: Performance with WSL2 is comparable to native Linux. If using Hyper-V backend, expect 10-20% slower compilation times.
+
+## Platform-Specific Notes
+
+### macOS
+- **Apple Silicon (M1/M2/M3)**: Docker runs via Rosetta 2 translation layer. First build may take longer.
+- **Intel Macs**: Native x86_64 performance.
+- Configuration location: `~/Library/Application Support/Claude/claude_desktop_config.json`
+
+### Windows
+- **Requires**: Windows 10/11 with WSL2 enabled
+- **Docker Backend**: WSL2 backend recommended (not Hyper-V)
+- **File Performance**: Keep project files in WSL2 filesystem for better performance
+- Configuration location: `%APPDATA%\Claude\claude_desktop_config.json`
+- To access WSL filesystem: `\\wsl$\Ubuntu\home\<username>\`
+
+### Linux
+- **Native Performance**: Best performance on native Linux
+- **Docker**: Requires `docker` and `docker-compose` installed
+- Configuration location: `~/.config/Claude/claude_desktop_config.json`
+
+## Requirements
+
+### All Platforms
+- Claude Desktop application
+- 10+ GB disk space
+- 8+ GB RAM recommended
+
+### macOS
+- macOS 11+ (Big Sur or later)
+- Docker Desktop for Mac
+
+### Windows  
+- Windows 10/11 (64-bit)
+- WSL2 enabled
+- Docker Desktop for Windows
+- Ubuntu WSL2 distro (recommended)
+
+### Linux
+- Modern Linux distribution (Ubuntu 20.04+, Fedora 35+, etc.)
+- Docker Engine or Docker Desktop
+- docker-compose
+
+## Installation Guides
+
+### Windows Setup from Scratch
+
+1. **Enable WSL2**:
+   ```powershell
+   # Run in PowerShell as Administrator
+   wsl --install
+   # Restart computer
+   ```
+
+2. **Install Ubuntu on WSL2**:
+   ```powershell
+   wsl --install -d Ubuntu
+   # Set up username and password when prompted
+   ```
+
+3. **Install Docker Desktop**:
+   - Download from: https://www.docker.com/products/docker-desktop
+   - Install and enable WSL2 integration
+   - Go to Settings → Resources → WSL Integration
+   - Enable integration with Ubuntu
+
+4. **Clone project in WSL2**:
+   ```bash
+   # Open Ubuntu terminal
+   cd ~
+   git clone <repository-url>
+   cd geant4-mcp
+   ```
+
+5. **Continue with Quick Start section above**
+
+### macOS Setup from Scratch
+
+1. **Install Homebrew** (if not already installed):
+   ```bash
+   /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+   ```
+
+2. **Install Docker Desktop**:
+   ```bash
+   brew install --cask docker
+   # Or download from: https://www.docker.com/products/docker-desktop
+   ```
+
+3. **Open Docker Desktop** and complete setup
+
+4. **Continue with Quick Start section above**
+
+### Linux Setup from Scratch
+
+1. **Install Docker** (Ubuntu/Debian):
+   ```bash
+   sudo apt-get update
+   sudo apt-get install docker.io docker-compose
+   sudo systemctl start docker
+   sudo systemctl enable docker
+   sudo usermod -aG docker $USER
+   # Log out and back in for group changes to take effect
+   ```
+
+2. **For other distros**, see: https://docs.docker.com/engine/install/
+
+3. **Continue with Quick Start section above**
 
 ## License
 
 This project is provided as-is for educational and research purposes.
-
-## Requirements
-
-- Docker Desktop for macOS
-- Claude Desktop
-- 10+ GB disk space
-- 8+ GB RAM recommended

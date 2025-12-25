@@ -324,12 +324,21 @@ async def handle_call_tool(name: str, arguments: dict | None) -> list[TextConten
             ]
         
         elif name == "create_plots":
+            import os
+            import warnings
+            warnings.filterwarnings('ignore')
+            os.environ['MPLBACKEND'] = 'Agg'
+            
             import uproot
             import numpy as np
             import matplotlib
-            matplotlib.use('Agg')  # Non-interactive backend
+            matplotlib.use('Agg', force=True)
             import matplotlib.pyplot as plt
             import base64
+            
+            import logging
+            logging.getLogger('matplotlib').setLevel(logging.CRITICAL)
+            plt.ioff()
             
             root_file = arguments.get("root_file", "output/simulation_results.root")
             
@@ -385,14 +394,13 @@ Generated plots are shown below:
             plt.savefig(plot1_path, dpi=150, bbox_inches='tight')
             plt.close()
             
-            # Read and encode image
             with open(plot1_path, 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
             
-            results.append(ImageContent(
-                type="image",
-                data=img_data,
-                mimeType="image/png"
+            # Return as embedded resource with data URI
+            results.append(TextContent(
+                type="text",
+                text=f"![Energy Deposition Histogram](data:image/png;base64,{img_data})"
             ))
             
             # Plot 2: Event-by-Event Energy
@@ -410,10 +418,9 @@ Generated plots are shown below:
             with open(plot2_path, 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
             
-            results.append(ImageContent(
-                type="image",
-                data=img_data,
-                mimeType="image/png"
+            results.append(TextContent(
+                type="text",
+                text=f"![Energy vs Event](data:image/png;base64,{img_data})"
             ))
             
             # Plot 3: Tracks Distribution
@@ -431,10 +438,9 @@ Generated plots are shown below:
             with open(plot3_path, 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
             
-            results.append(ImageContent(
-                type="image",
-                data=img_data,
-                mimeType="image/png"
+            results.append(TextContent(
+                type="text",
+                text=f"![Tracks Distribution](data:image/png;base64,{img_data})"
             ))
             
             # Plot 4: Summary Dashboard
@@ -475,7 +481,7 @@ Mean Tracks: {np.mean(tracks):.1f}
 Mean Interactions: {np.mean(interactions):.1f}"""
             
             axes[1, 1].text(0.1, 0.5, stats_box, fontsize=11, family='monospace', 
-                            verticalalignment='center', transform=axes[1, 1].transAxes)
+                        verticalalignment='center', transform=axes[1, 1].transAxes)
             axes[1, 1].axis('off')
             
             plt.suptitle('GEANT4 Simulation Summary Dashboard', fontsize=16, fontweight='bold')
@@ -487,10 +493,9 @@ Mean Interactions: {np.mean(interactions):.1f}"""
             with open(plot4_path, 'rb') as img_file:
                 img_data = base64.b64encode(img_file.read()).decode('utf-8')
             
-            results.append(ImageContent(
-                type="image",
-                data=img_data,
-                mimeType="image/png"
+            results.append(TextContent(
+                type="text",
+                text=f"![Summary Dashboard](data:image/png;base64,{img_data})"
             ))
             
             # Final summary text
