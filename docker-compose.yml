@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  geant4-sim:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: geant4-simulation
+    volumes:
+      - ./simulation.py:/workspace/simulation.py
+      - ./mcp_server.py:/workspace/mcp_server.py
+      - ./output:/workspace/output
+    environment:
+      - PYTHONPATH=/opt/geant4/lib
+      - LD_LIBRARY_PATH=/opt/geant4/lib
+    ports:
+      - "5000:5000"
+    stdin_open: true
+    tty: true
+    command: python3 mcp_server.py
