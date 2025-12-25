@@ -25,7 +25,7 @@ After cloning this repository, users can:
 
 1. **Build and run in 3 commands**:
    ```bash
-   git clone https://github.com/<your-username>/geant4-mcp.git
+   git clone https://github.com/abhich2507/geant4-mcp.git
    cd geant4-mcp
    docker-compose up -d
    ```
