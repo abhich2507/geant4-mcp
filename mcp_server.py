@@ -155,6 +155,24 @@ async def handle_list_tools() -> list[Tool]:
                 },
                 "required": ["filename"]
             }
+        ),
+        Tool(
+            name="create_plots",
+            description=(
+                "Create plots from the ROOT file simulation results. "
+                "Generates multiple plots including energy deposition histograms, "
+                "scatter plots, and summary dashboards. Returns image paths."
+            ),
+            inputSchema={
+                "type": "object",
+                "properties": {
+                    "root_file": {
+                        "type": "string",
+                        "description": "Path to ROOT file (default: output/simulation_results.root)",
+                        "default": "output/simulation_results.root"
+                    }
+                }
+            }
         )
     ]
 
