@@ -514,64 +514,6 @@ The GEANT4 Python bindings may take a long time to compile. Wait for the initial
 
 3. **Continue with Quick Start section above**
 
-## Publishing and Sharing
-
-### Publishing to GitHub
-
-This project is ready to be published on GitHub! Users will be able to:
-
-1. **Clone the repository**:
-   ```bash
-   git clone https://github.com/<your-username>/geant4-mcp.git
-   cd geant4-mcp
-   ```
-
-2. **Build and run** following the Quick Start instructions above
-
-3. **All dependencies are containerized** - users don't need to install GEANT4 or Python packages manually
-
-### What's Included for Users
-
-✅ **Ready to Run**:
-- Complete Docker setup (Dockerfile + docker-compose.yml)
-- All Python code (simulation.py, mcp_server.py)
-- Default configuration (config.json)
-- Documentation (README.md + additional guides)
-
-✅ **No Manual Setup Required**:
-- GEANT4 is compiled automatically in Docker
-- All Python dependencies installed via requirements.txt
-- MCP server ready to connect to Claude Desktop
-
-✅ **Cross-Platform**:
-- Works on macOS (Intel + Apple Silicon)
-- Works on Windows (with WSL2)
-- Works on Linux (native)
-
-### Before Publishing
-
-**Optional but Recommended**:
-
-1. **Review sensitive data**:
-   ```bash
-   # Check what will be committed
-   git status
-   ```
-
-2. **Test on a fresh clone** (optional):
-   ```bash
-   cd /tmp
-   git clone /path/to/your/repo test-clone
-   cd test-clone
-   docker-compose build
-   docker-compose up -d
-   ```
-
-3. **Add a license** (if not already present):
-   ```bash
-   # Choose a license at https://choosealicense.com/
-   # Common choices: MIT, Apache 2.0, GPL-3.0
-   ```
 
 ### What Users Need
 
