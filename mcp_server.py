@@ -326,9 +326,10 @@ async def handle_call_tool(name: str, arguments: dict | None) -> list[TextConten
         elif name == "create_plots":
             import uproot
             import numpy as np
+            import matplotlib
+            matplotlib.use('Agg')  # Non-interactive backend
             import matplotlib.pyplot as plt
             import base64
-            from io import BytesIO
             
             root_file = arguments.get("root_file", "output/simulation_results.root")
             
@@ -347,12 +348,30 @@ async def handle_call_tool(name: str, arguments: dict | None) -> list[TextConten
                 truth_energy = tree["truth_energy"].array()
                 tracks = tree["tracks_created"].array()
                 event_id = tree["event_id"].array()
+                interactions = tree["interactions"].array()
             
             # Create output directory
             output_dir = Path("output/plots")
             output_dir.mkdir(parents=True, exist_ok=True)
             
-            plot_files = []
+            results = []
+            
+            # Add statistics text first
+            stats_text = f"""📊 GEANT4 Simulation Results Analysis
+
+📈 Statistics Summary:
+  • Total Events: {len(event_id)}
+  • Mean Energy Deposited: {np.mean(energy_deposited):.4f} MeV
+  • Std Dev: {np.std(energy_deposited):.4f} MeV
+  • Min Energy: {np.min(energy_deposited):.4f} MeV
+  • Max Energy: {np.max(energy_deposited):.4f} MeV
+  • Total Energy Deposited: {np.sum(energy_deposited):.2f} MeV
+  • Mean Tracks Created: {np.mean(tracks):.1f}
+  • Mean Interactions: {np.mean(interactions):.1f}
+
+Generated plots are shown below:
+"""
+            results.append(TextContent(type="text", text=stats_text))
             
             # Plot 1: Energy Deposition Histogram
             plt.figure(figsize=(10, 6))
@@ -362,33 +381,88 @@ async def handle_call_tool(name: str, arguments: dict | None) -> list[TextConten
             plt.title('Energy Deposition Distribution', fontsize=14, fontweight='bold')
             plt.grid(True, alpha=0.3)
             plt.tight_layout()
-            plot1 = output_dir / "energy_deposition_hist.png"
-            plt.savefig(plot1, dpi=150)
+            plot1_path = output_dir / "energy_deposition_hist.png"
+            plt.savefig(plot1_path, dpi=150, bbox_inches='tight')
             plt.close()
-            plot_files.append(str(plot1))
             
-            # Plot 2: Summary Dashboard
+            # Read and encode image
+            with open(plot1_path, 'rb') as img_file:
+                img_data = base64.b64encode(img_file.read()).decode('utf-8')
+            
+            results.append(ImageContent(
+                type="image",
+                data=img_data,
+                mimeType="image/png"
+            ))
+            
+            # Plot 2: Event-by-Event Energy
+            plt.figure(figsize=(12, 6))
+            plt.plot(event_id, energy_deposited, marker='o', markersize=3, linestyle='-', alpha=0.6, color='steelblue')
+            plt.xlabel('Event ID', fontsize=12)
+            plt.ylabel('Energy Deposited (MeV)', fontsize=12)
+            plt.title('Energy Deposition per Event', fontsize=14, fontweight='bold')
+            plt.grid(True, alpha=0.3)
+            plt.tight_layout()
+            plot2_path = output_dir / "energy_vs_event.png"
+            plt.savefig(plot2_path, dpi=150, bbox_inches='tight')
+            plt.close()
+            
+            with open(plot2_path, 'rb') as img_file:
+                img_data = base64.b64encode(img_file.read()).decode('utf-8')
+            
+            results.append(ImageContent(
+                type="image",
+                data=img_data,
+                mimeType="image/png"
+            ))
+            
+            # Plot 3: Tracks Distribution
+            plt.figure(figsize=(10, 6))
+            plt.hist(tracks, bins=range(0, int(np.max(tracks))+2), alpha=0.7, color='green', edgecolor='black')
+            plt.xlabel('Number of Tracks Created', fontsize=12)
+            plt.ylabel('Number of Events', fontsize=12)
+            plt.title('Secondary Tracks Distribution', fontsize=14, fontweight='bold')
+            plt.grid(True, alpha=0.3)
+            plt.tight_layout()
+            plot3_path = output_dir / "tracks_distribution.png"
+            plt.savefig(plot3_path, dpi=150, bbox_inches='tight')
+            plt.close()
+            
+            with open(plot3_path, 'rb') as img_file:
+                img_data = base64.b64encode(img_file.read()).decode('utf-8')
+            
+            results.append(ImageContent(
+                type="image",
+                data=img_data,
+                mimeType="image/png"
+            ))
+            
+            # Plot 4: Summary Dashboard
             fig, axes = plt.subplots(2, 2, figsize=(14, 10))
             
+            # Energy histogram
             axes[0, 0].hist(energy_deposited, bins=30, alpha=0.7, color='blue', edgecolor='black')
-            axes[0, 0].set_xlabel('Energy Deposited (MeV)')
-            axes[0, 0].set_ylabel('Events')
-            axes[0, 0].set_title('Energy Distribution')
+            axes[0, 0].set_xlabel('Energy Deposited (MeV)', fontsize=10)
+            axes[0, 0].set_ylabel('Events', fontsize=10)
+            axes[0, 0].set_title('Energy Distribution', fontsize=12, fontweight='bold')
             axes[0, 0].grid(True, alpha=0.3)
             
-            axes[0, 1].scatter(event_id, energy_deposited, alpha=0.5, s=10)
-            axes[0, 1].set_xlabel('Event ID')
-            axes[0, 1].set_ylabel('Energy Deposited (MeV)')
-            axes[0, 1].set_title('Energy per Event')
+            # Scatter plot
+            axes[0, 1].scatter(event_id, energy_deposited, alpha=0.5, s=10, color='steelblue')
+            axes[0, 1].set_xlabel('Event ID', fontsize=10)
+            axes[0, 1].set_ylabel('Energy Deposited (MeV)', fontsize=10)
+            axes[0, 1].set_title('Energy per Event', fontsize=12, fontweight='bold')
             axes[0, 1].grid(True, alpha=0.3)
             
+            # Tracks histogram
             axes[1, 0].hist(tracks, bins=range(0, int(np.max(tracks))+2), alpha=0.7, color='green', edgecolor='black')
-            axes[1, 0].set_xlabel('Tracks Created')
-            axes[1, 0].set_ylabel('Events')
-            axes[1, 0].set_title('Secondary Tracks')
+            axes[1, 0].set_xlabel('Tracks Created', fontsize=10)
+            axes[1, 0].set_ylabel('Events', fontsize=10)
+            axes[1, 0].set_title('Secondary Tracks', fontsize=12, fontweight='bold')
             axes[1, 0].grid(True, alpha=0.3)
             
-            stats_text = f"""Statistics Summary
+            # Statistics text
+            stats_box = f"""Statistics Summary
 
 Total Events: {len(event_id)}
 Mean Energy: {np.mean(energy_deposited):.4f} MeV
@@ -397,36 +471,33 @@ Min: {np.min(energy_deposited):.4f} MeV
 Max: {np.max(energy_deposited):.4f} MeV
 
 Total Deposited: {np.sum(energy_deposited):.2f} MeV
-Mean Tracks: {np.mean(tracks):.1f}"""
+Mean Tracks: {np.mean(tracks):.1f}
+Mean Interactions: {np.mean(interactions):.1f}"""
             
-            axes[1, 1].text(0.1, 0.5, stats_text, fontsize=11, family='monospace', 
+            axes[1, 1].text(0.1, 0.5, stats_box, fontsize=11, family='monospace', 
                             verticalalignment='center', transform=axes[1, 1].transAxes)
             axes[1, 1].axis('off')
             
-            plt.suptitle('GEANT4 Simulation Summary', fontsize=16, fontweight='bold')
+            plt.suptitle('GEANT4 Simulation Summary Dashboard', fontsize=16, fontweight='bold')
             plt.tight_layout()
-            plot2 = output_dir / "summary_dashboard.png"
-            plt.savefig(plot2, dpi=150)
+            plot4_path = output_dir / "summary_dashboard.png"
+            plt.savefig(plot4_path, dpi=150, bbox_inches='tight')
             plt.close()
-            plot_files.append(str(plot2))
             
-            # Return text with plot locations
-            result_text = f"Created {len(plot_files)} plots from {root_file}:\n\n"
-            for plot_file in plot_files:
-                result_text += f"✓ {plot_file}\n"
+            with open(plot4_path, 'rb') as img_file:
+                img_data = base64.b64encode(img_file.read()).decode('utf-8')
             
-            result_text += f"\nStatistics:\n"
-            result_text += f"  Total Events: {len(event_id)}\n"
-            result_text += f"  Mean Energy Deposited: {np.mean(energy_deposited):.4f} MeV\n"
-            result_text += f"  Std Dev: {np.std(energy_deposited):.4f} MeV\n"
-            result_text += f"  Total Energy Deposited: {np.sum(energy_deposited):.2f} MeV\n"
+            results.append(ImageContent(
+                type="image",
+                data=img_data,
+                mimeType="image/png"
+            ))
             
-            return [
-                TextContent(
-                    type="text",
-                    text=result_text
-                )
-            ]
+            # Final summary text
+            summary = f"\n✅ Generated 4 plots from {len(event_id)} events\n📁 Plots saved to: {output_dir}/"
+            results.append(TextContent(type="text", text=summary))
+            
+            return results
         
         else:
             return [
