@@ -2,7 +2,7 @@
 
 A complete GEANT4 particle physics simulation system using Python bindings, integrated with Claude Desktop via Model Context Protocol (MCP) server. Fully containerized with Docker for easy deployment on macOS, Windows, and Linux.
 
-> **🚀 Ready to Use**: Clone this repo and run with Docker - no manual GEANT4 installation required!
+> **Ready to Use**: Clone this repo and run with Docker - no manual GEANT4 installation required!
 
 ## Features
 
